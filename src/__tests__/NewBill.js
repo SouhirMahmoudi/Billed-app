@@ -25,8 +25,6 @@ describe("Given I am connected as an employee", () => {
       root.setAttribute("id", "root")
       document.body.append(root)
       router()
-
-
     })
 
     test('Then mail icon in vertical layout should be highlighted', () => {
@@ -77,7 +75,6 @@ describe("Given I am connected as an employee", () => {
     })
 
     test('then when I choose a file with a good extension, function handleChangeFile should return true', () => {
-      //it("should not display an alert 'Invalid format (!only image format is accepted)'")
       window.onNavigate(ROUTES_PATH['NewBill'])
       const html = NewBillUI({})
       document.body.innerHTML = html
@@ -92,15 +89,6 @@ describe("Given I am connected as an employee", () => {
       expect(handleChangeFile).toHaveBeenCalled()
       expect(handleChangeFile).toBeTruthy()
     })
-
-
-
-
-
-
-
-
-
 
     // test d'intégration post 
 
@@ -155,10 +143,6 @@ describe("Given I am connected as an employee", () => {
 
       // check if handlesubmit is called 
       expect(handleSubmit).toHaveBeenCalled()
-
-      // check validity of inputs ??? 
-
-      expect(handleSubmit).toBeTruthy()
 
     })
 
@@ -216,43 +200,4 @@ describe("Given I am connected as Employee", () => {
   })
 })
 
-   /* test(('when I do fill fields in incorrect format and I click on submit, it should not post a new bill'), () => {
-      window.onNavigate(ROUTES_PATH['NewBill'])
-      const newbill = new NewBill({
-        document, onNavigate, store: mockStore, localStorage: window.localStorage
-      })
-
-      const Bill =
-      {
-        "vat": "80",
-        "status": "accepted",
-        "type": "Hôtel et logement",
-        "name": "",
-        "file": new File([""], "imageTest.jpg"),
-        "date": "200404",
-        "amount": 400,
-        "pct": 20
-      }
-      const html = NewBillUI(Bill)
-      document.body.innerHTML = html
-      const handleSubmit = jest.fn((e) => newbill.handleSubmit(e))
-      const form = screen.getByTestId("form-new-bill")
-      let validBill
-      form.addEventListener("submit", (e) => { validBill = handleSubmit(e) })
-      fireEvent.submit(form)
-
-      expect(screen.getByTestId("expense-name")).toBeTruthy()
-      expect(screen.getByTestId("datepicker")).toBeTruthy()
-      expect(screen.getByTestId("amount")).toBeTruthy()
-      expect(screen.getByTestId("vat")).toBeTruthy()
-      expect(screen.getByTestId("pct")).toBeTruthy()
-      expect(screen.getByTestId("file")).toBeTruthy()
-      expect(handleSubmit).toHaveBeenCalled()
-      expect(validBill).toBeFalsy()
-
-    })*/
-
-
-
-
-
+   
