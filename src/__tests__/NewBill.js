@@ -11,7 +11,7 @@ import { ROUTES, ROUTES_PATH } from "../constants/routes"
 import { localStorageMock } from "../__mocks__/localStorage.js"
 import mockStore from "../__mocks__/store"
 import { bills } from "../fixtures/bills"
-import router from "../app/Router.js";
+import router from "../app/Router.js"
 
 jest.mock("../app/store", () => mockStore)
 
@@ -26,7 +26,7 @@ describe("Given I am connected as an employee", () => {
       document.body.append(root)
       router()
 
-     
+
     })
 
     test('Then mail icon in vertical layout should be highlighted', () => {
@@ -54,7 +54,7 @@ describe("Given I am connected as an employee", () => {
       const handleChangeFile = jest.fn((e) => newbill.handleChangeFile(e))
       const file = screen.getByTestId("file")
       file.addEventListener("change", (e) => { handleChangeFile(e) })
-      const image1 = new File([""], "image1.jpg");
+      const image1 = new File([""], "image1.jpg")
       userEvent.upload(file, image1)
       expect(handleChangeFile).toHaveBeenCalled()
     })
@@ -70,7 +70,7 @@ describe("Given I am connected as an employee", () => {
       const handleChangeFile = jest.fn((e) => { validFile = newbill.handleChangeFile(e) })
       const file = screen.getByTestId("file")
       file.addEventListener("change", (e) => { handleChangeFile(e) })
-      const texte = new File([""], "text.txt");
+      const texte = new File([""], "text.txt")
       userEvent.upload(file, texte)
       expect(handleChangeFile).toHaveBeenCalled()
       expect(validFile).toBeFalsy()
@@ -87,11 +87,17 @@ describe("Given I am connected as an employee", () => {
       const handleChangeFile = jest.fn((e) => newbill.handleChangeFile(e))
       const file = screen.getByTestId("file")
       file.addEventListener("change", (e) => { handleChangeFile(e) })
-      const image2 = new File([""], "image2.jpg");
+      const image2 = new File([""], "image2.jpg")
       userEvent.upload(file, image2)
       expect(handleChangeFile).toHaveBeenCalled()
       expect(handleChangeFile).toBeTruthy()
     })
+
+
+
+
+
+
 
 
 
@@ -107,25 +113,132 @@ describe("Given I am connected as an employee", () => {
 
       const Bill =
       {
-        "id": "47qAXb6fIm2zOKkLzMro",
         "vat": "80",
-        "fileUrl": "https://test.storage.tld/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
+        "status": "pending",
+        "type": "Hôtel et logement",
+        "name": "",
+        "file": new File([""], "imageTest.jpg"),
+        "date": "200404",
+        "amount": 400,
+        "pct": 20
+      }
+      const html = NewBillUI(Bill)
+      document.body.innerHTML = html
+      // check if element html of form exist
+      expect(screen.getByTestId("datepicker")).toBeTruthy()
+      expect(screen.getByTestId("amount")).toBeTruthy()
+      expect(screen.getByTestId("vat")).toBeTruthy()
+      expect(screen.getByTestId("pct")).toBeTruthy()
+      expect(screen.getByTestId("file")).toBeTruthy()
+
+      //get html elements inputs
+      const Name = screen.getByTestId('expense-name')
+      const Date = screen.getByTestId('datepicker')
+      const Ammount = screen.getByTestId('amount')
+      const Vat = screen.getByTestId('vat')
+      const Pct = screen.getByTestId('pct')
+      const file = screen.getByTestId('file')
+      const form = screen.getByTestId("form-new-bill")
+
+      // Edit input HTML
+      fireEvent.change(Name, { target: { value: Bill.name } })
+      fireEvent.change(Date, { target: { value: Bill.date } })
+      fireEvent.change(Ammount, { target: { value: Bill.amount } })
+      fireEvent.change(Vat, { target: { value: Bill.vat } })
+      fireEvent.change(Pct, { target: { value: Bill.pct } })
+
+      // Submit form
+      const handleSubmit = jest.fn((e) => newbill.handleSubmit(e))
+      form.addEventListener("submit", (e) => { handleSubmit(e) })
+      fireEvent.submit(form)
+      waitFor(() => { userEvent.upload(file, Bill.file) })
+
+      // check if handlesubmit is called 
+      expect(handleSubmit).toHaveBeenCalled()
+
+      // check validity of inputs ??? 
+
+      expect(handleSubmit).toBeTruthy()
+
+    })
+
+  })
+})
+
+// test error 404 and 500cd 
+describe("Given I am connected as Employee", () => {
+  describe("When an error occurs on API", () => {
+    beforeEach(() => {
+      jest.spyOn(mockStore, "bills")
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      })
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({
+          type: "Employee",
+          email: "a@a",
+        })
+      )
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.appendChild(root)
+      router();
+    });
+    test("fetches bills from an API and fails with 404 message error", async () => {
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          list: () => {
+            return Promise.reject(new Error("Erreur 404"));
+          },
+        };
+      });
+      window.onNavigate(ROUTES_PATH["Bills"]);
+      await new Promise(process.nextTick);
+      const message = await screen.getByText(/Erreur 404/);
+      expect(message).toBeTruthy();
+    });
+
+    test("fetches messages from an API and fails with 500 message error", async () => {
+      mockStore.bills.mockImplementationOnce(() => {
+        return {
+          list: () => {
+            return Promise.reject(new Error("Erreur 500"));
+          },
+        };
+      });
+
+      window.onNavigate(ROUTES_PATH["Bills"]);
+      await new Promise(process.nextTick);
+      const message = await screen.getByText(/Erreur 500/);
+      expect(message).toBeTruthy();
+    })
+  })
+})
+
+   /* test(('when I do fill fields in incorrect format and I click on submit, it should not post a new bill'), () => {
+      window.onNavigate(ROUTES_PATH['NewBill'])
+      const newbill = new NewBill({
+        document, onNavigate, store: mockStore, localStorage: window.localStorage
+      })
+
+      const Bill =
+      {
+        "vat": "80",
         "status": "accepted",
         "type": "Hôtel et logement",
-        "commentAdmin": "ok",
-        "commentary": "séminaire billed",
-        "name": "encore",
-        "fileName": "preview-facture-free-201801-pdf-1.jpg",
-        "date": "2004-04-04",
+        "name": "",
+        "file": new File([""], "imageTest.jpg"),
+        "date": "200404",
         "amount": 400,
-        "email": "a@a",
         "pct": 20
       }
       const html = NewBillUI(Bill)
       document.body.innerHTML = html
       const handleSubmit = jest.fn((e) => newbill.handleSubmit(e))
       const form = screen.getByTestId("form-new-bill")
-      form.addEventListener("submit", (e) => { handleSubmit(e) })
+      let validBill
+      form.addEventListener("submit", (e) => { validBill = handleSubmit(e) })
       fireEvent.submit(form)
 
       expect(screen.getByTestId("expense-name")).toBeTruthy()
@@ -135,11 +248,11 @@ describe("Given I am connected as an employee", () => {
       expect(screen.getByTestId("pct")).toBeTruthy()
       expect(screen.getByTestId("file")).toBeTruthy()
       expect(handleSubmit).toHaveBeenCalled()
-      
-    })
+      expect(validBill).toBeFalsy()
 
-  })
-})
+    })*/
+
+
 
 
 
